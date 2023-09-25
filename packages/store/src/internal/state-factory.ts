@@ -1,5 +1,17 @@
 import { Injectable, Injector, Optional, SkipSelf, Inject, OnDestroy } from '@angular/core';
 import {
+  ɵmemoize,
+  ɵMETA_KEY,
+  ɵPlainObjectOf,
+  ɵMetaDataModel,
+  ɵgetStoreMetadata,
+  ɵStateClassInternal,
+  ɵINITIAL_STATE_TOKEN,
+  ɵSharedSelectorOptions,
+  ɵRuntimeSelectorContext
+} from '@ngxs/store/internals';
+import { getActionTypeFromInstance, getValue, setValue } from '@ngxs/store/plugins';
+import {
   forkJoin,
   from,
   Observable,
@@ -18,27 +30,19 @@ import {
   shareReplay,
   takeUntil
 } from 'rxjs/operators';
-import { INITIAL_STATE_TOKEN, PlainObjectOf, memoize, ɵMETA_KEY } from '@ngxs/store/internals';
 
 import { NgxsConfig } from '../symbols';
 import {
   buildGraph,
   findFullParentPath,
-  isObject,
   MappedStore,
-  MetaDataModel,
   nameToState,
   propGetter,
-  StateClassInternal,
   StateKeyGraph,
   StatesAndDefaults,
   StatesByName,
-  topologicalSort,
-  RuntimeSelectorContext,
-  SharedSelectorOptions,
-  getStoreMetadata
+  topologicalSort
 } from './internals';
-import { getActionTypeFromInstance, getValue, setValue } from '../utils/utils';
 import { ofActionDispatched } from '../operators/of-action';
 import { ActionContext, ActionStatus, InternalActions } from '../actions-stream';
 import { InternalDispatchedActionResults } from '../internal/dispatcher';
@@ -48,6 +52,20 @@ import { ensureStateClassIsInjectable } from '../ivy/ivy-enabled-in-dev-mode';
 import { NgxsUnhandledActionsLogger } from '../dev-features/ngxs-unhandled-actions-logger';
 
 const NG_DEV_MODE = typeof ngDevMode === 'undefined' || ngDevMode;
+
+function cloneDefaults(defaults: any): any {
+  let value = defaults === undefined ? {} : defaults;
+
+  if (defaults) {
+    if (Array.isArray(defaults)) {
+      value = defaults.slice();
+    } else if (typeof defaults === 'object') {
+      value = { ...defaults };
+    }
+  }
+
+  return value;
+}
 
 /**
  * The `StateFactory` class adds root and feature states to the graph.
@@ -76,7 +94,7 @@ export class StateFactory implements OnDestroy {
     private _actionResults: InternalDispatchedActionResults,
     private _stateContextFactory: StateContextFactory,
     @Optional()
-    @Inject(INITIAL_STATE_TOKEN)
+    @Inject(ɵINITIAL_STATE_TOKEN)
     private _initialState: any
   ) {}
 
@@ -92,13 +110,13 @@ export class StateFactory implements OnDestroy {
     return this._parentFactory ? this._parentFactory.statesByName : this._statesByName;
   }
 
-  private _statePaths: PlainObjectOf<string> = {};
+  private _statePaths: ɵPlainObjectOf<string> = {};
 
-  private get statePaths(): PlainObjectOf<string> {
+  private get statePaths(): ɵPlainObjectOf<string> {
     return this._parentFactory ? this._parentFactory.statePaths : this._statePaths;
   }
 
-  getRuntimeSelectorContext = memoize(() => {
+  getRuntimeSelectorContext = ɵmemoize(() => {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const stateFactory = this;
 
@@ -107,7 +125,7 @@ export class StateFactory implements OnDestroy {
       return path ? propGetter(path.split('.'), stateFactory._config) : null;
     }
 
-    const context: RuntimeSelectorContext = this._parentFactory
+    const context: ɵRuntimeSelectorContext = this._parentFactory
       ? this._parentFactory.getRuntimeSelectorContext()
       : {
           getStateGetter(key: string) {
@@ -125,7 +143,7 @@ export class StateFactory implements OnDestroy {
               return getter ? getter(...args) : undefined;
             };
           },
-          getSelectorOptions(localOptions?: SharedSelectorOptions) {
+          getSelectorOptions(localOptions?: ɵSharedSelectorOptions) {
             const globalSelectorOptions = stateFactory._config.selectorOptions;
             return {
               ...globalSelectorOptions,
@@ -136,20 +154,6 @@ export class StateFactory implements OnDestroy {
     return context;
   });
 
-  private static _cloneDefaults(defaults: any): any {
-    let value = defaults;
-
-    if (Array.isArray(defaults)) {
-      value = defaults.slice();
-    } else if (isObject(defaults)) {
-      value = { ...defaults };
-    } else if (defaults === undefined) {
-      value = {};
-    }
-
-    return value;
-  }
-
   ngOnDestroy(): void {
     this._actionsSubscription?.unsubscribe();
   }
@@ -157,7 +161,7 @@ export class StateFactory implements OnDestroy {
   /**
    * Add a new state to the global defs.
    */
-  add(stateClasses: StateClassInternal[]): MappedStore[] {
+  add(stateClasses: ɵStateClassInternal[]): MappedStore[] {
     if (NG_DEV_MODE) {
       ensureStatesAreDecorated(stateClasses);
     }
@@ -167,14 +171,14 @@ export class StateFactory implements OnDestroy {
 
     const stateGraph: StateKeyGraph = buildGraph(newStates);
     const sortedStates: string[] = topologicalSort(stateGraph);
-    const paths: PlainObjectOf<string> = findFullParentPath(stateGraph);
-    const nameGraph: PlainObjectOf<StateClassInternal> = nameToState(newStates);
+    const paths: ɵPlainObjectOf<string> = findFullParentPath(stateGraph);
+    const nameGraph: ɵPlainObjectOf<ɵStateClassInternal> = nameToState(newStates);
     const bootstrappedStores: MappedStore[] = [];
 
     for (const name of sortedStates) {
-      const stateClass: StateClassInternal = nameGraph[name];
+      const stateClass: ɵStateClassInternal = nameGraph[name];
       const path: string = paths[name];
-      const meta: MetaDataModel = stateClass[ɵMETA_KEY]!;
+      const meta: ɵMetaDataModel = stateClass[ɵMETA_KEY]!;
 
       this.addRuntimeInfoToMeta(meta, path);
 
@@ -192,7 +196,7 @@ export class StateFactory implements OnDestroy {
         isInitialised: false,
         actions: meta.actions,
         instance: this._injector.get(stateClass),
-        defaults: StateFactory._cloneDefaults(meta.defaults)
+        defaults: cloneDefaults(meta.defaults)
       };
 
       // ensure our store hasn't already been added
@@ -211,8 +215,8 @@ export class StateFactory implements OnDestroy {
   /**
    * Add a set of states to the store and return the defaults
    */
-  addAndReturnDefaults(stateClasses: StateClassInternal[]): StatesAndDefaults {
-    const classes: StateClassInternal[] = stateClasses || [];
+  addAndReturnDefaults(stateClasses: ɵStateClassInternal[]): StatesAndDefaults {
+    const classes: ɵStateClassInternal[] = stateClasses || [];
 
     const mappedStores: MappedStore[] = this.add(classes);
     const defaults = mappedStores.reduce(
@@ -288,7 +292,7 @@ export class StateFactory implements OnDestroy {
                   if (value instanceof Promise) {
                     return from(value);
                   }
-                  if (isObservable(value)) {
+                  if (isObservable<any>(value)) {
                     return value;
                   }
                   return of(value);
@@ -335,14 +339,14 @@ export class StateFactory implements OnDestroy {
     return forkJoin(results);
   }
 
-  private addToStatesMap(stateClasses: StateClassInternal[]): {
-    newStates: StateClassInternal[];
+  private addToStatesMap(stateClasses: ɵStateClassInternal[]): {
+    newStates: ɵStateClassInternal[];
   } {
-    const newStates: StateClassInternal[] = [];
+    const newStates: ɵStateClassInternal[] = [];
     const statesMap: StatesByName = this.statesByName;
 
     for (const stateClass of stateClasses) {
-      const stateName = getStoreMetadata(stateClass).name!;
+      const stateName = ɵgetStoreMetadata(stateClass).name!;
       if (NG_DEV_MODE) {
         ensureStateNameIsUnique(stateName, stateClass, statesMap);
       }
@@ -356,7 +360,7 @@ export class StateFactory implements OnDestroy {
     return { newStates };
   }
 
-  private addRuntimeInfoToMeta(meta: MetaDataModel, path: string): void {
+  private addRuntimeInfoToMeta(meta: ɵMetaDataModel, path: string): void {
     this.statePaths[meta.name!] = path;
     // TODO: v4 - we plan to get rid of the path property because it is non-deterministic
     // we can do this when we get rid of the incorrectly exposed getStoreMetadata

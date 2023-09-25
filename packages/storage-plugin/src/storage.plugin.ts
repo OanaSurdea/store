@@ -1,6 +1,6 @@
 import { PLATFORM_ID, Inject, Injectable } from '@angular/core';
 import { isPlatformServer } from '@angular/common';
-import { PlainObject } from '@ngxs/store/internals';
+import { ɵPlainObject } from '@ngxs/store/internals';
 import {
   NgxsPlugin,
   setValue,
@@ -9,7 +9,7 @@ import {
   UpdateState,
   actionMatcher,
   NgxsNextPluginFn
-} from '@ngxs/store';
+} from '@ngxs/store/plugins';
 import {
   ɵDEFAULT_STATE_KEY,
   ɵFinalNgxsStoragePluginOptions,
@@ -122,7 +122,7 @@ export class NgxsStoragePlugin implements NgxsPlugin {
                   accumulator[addedState] = storedValue[addedState];
                 }
                 return accumulator;
-              }, <PlainObject>{});
+              }, <ɵPlainObject>{});
             }
 
             state = { ...state, ...storedValue };

@@ -1,8 +1,8 @@
+import { getActionTypeFromInstance } from '@ngxs/store/plugins';
 import { OperatorFunction, Observable } from 'rxjs';
 import { map, filter } from 'rxjs/operators';
 
 import { ActionType } from '../actions/symbols';
-import { getActionTypeFromInstance } from '../utils/utils';
 import { ActionContext, ActionStatus } from '../actions-stream';
 
 type TupleKeys<T extends any[]> = Exclude<keyof T, keyof []>;
@@ -123,7 +123,7 @@ function ofActionOperator(
 ): OperatorFunction<ActionContext, any> {
   const allowedMap = createAllowedActionTypesMap(allowedTypes);
   const allowedStatusMap = statuses && createAllowedStatusesMap(statuses);
-  return function(o: Observable<ActionContext>) {
+  return function (o: Observable<ActionContext>) {
     return o.pipe(filterStatus(allowedMap, allowedStatusMap), mapOperator());
   };
 }
