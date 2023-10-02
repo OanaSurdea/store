@@ -1,4 +1,5 @@
 export { NgxsStoragePluginModule, withNgxsStoragePlugin } from './storage.module';
+export { withStorageFeature } from './keys-manager';
 export { NgxsStoragePlugin } from './storage.plugin';
 export * from './engines';
 

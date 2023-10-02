@@ -12,12 +12,13 @@ import {
 } from '@ngxs/store';
 import {
   ɵDEFAULT_STATE_KEY,
-  ɵFinalNgxsStoragePluginOptions,
-  ɵFINAL_NGXS_STORAGE_PLUGIN_OPTIONS
+  NgxsStoragePluginOptions,
+  ɵNGXS_STORAGE_PLUGIN_OPTIONS
 } from '@ngxs/storage-plugin/internals';
 import { tap } from 'rxjs/operators';
 
 import { getStorageKey } from './internals';
+import { ɵNgxsStoragePluginKeysManager } from './keys-manager';
 
 declare const ngDevMode: boolean;
 
@@ -25,14 +26,15 @@ const NG_DEV_MODE = typeof ngDevMode === 'undefined' || ngDevMode;
 
 @Injectable()
 export class NgxsStoragePlugin implements NgxsPlugin {
-  private _keysWithEngines = this._options.keysWithEngines;
-  // We default to `[ɵDEFAULT_STATE_KEY]` if the user explicitly does not provide the `key` option.
+  // We default to `[ɵDEFAULT_STATE_KEY]` if the user explicitly does
+  // not provide the `key` option.
   private _usesDefaultStateKey =
-    this._keysWithEngines.length === 1 && this._keysWithEngines[0].key === ɵDEFAULT_STATE_KEY;
+    this._keysManager.keysWithEngines.length === 1 &&
+    this._keysManager.keysWithEngines[0].key === ɵDEFAULT_STATE_KEY;
 
   constructor(
-    @Inject(ɵFINAL_NGXS_STORAGE_PLUGIN_OPTIONS)
-    private _options: ɵFinalNgxsStoragePluginOptions,
+    private _keysManager: ɵNgxsStoragePluginKeysManager,
+    @Inject(ɵNGXS_STORAGE_PLUGIN_OPTIONS) private _options: NgxsStoragePluginOptions,
     @Inject(PLATFORM_ID) private _platformId: string
   ) {}
 
@@ -50,7 +52,7 @@ export class NgxsStoragePlugin implements NgxsPlugin {
     if (isInitOrUpdateAction) {
       const addedStates = isUpdateAction && event.addedStates;
 
-      for (const { key, engine } of this._keysWithEngines) {
+      for (const { key, engine } of this._keysManager.keysWithEngines) {
         // We're checking what states have been added by NGXS and if any of these states should be handled by
         // the storage plugin. For instance, we only want to deserialize the `auth` state, NGXS has added
         // the `user` state, the storage plugin will be rerun and will do redundant deserialization.
@@ -137,7 +139,7 @@ export class NgxsStoragePlugin implements NgxsPlugin {
           return;
         }
 
-        for (const { key, engine } of this._keysWithEngines) {
+        for (const { key, engine } of this._keysManager.keysWithEngines) {
           let storedValue = nextState;
 
           const storageKey = getStorageKey(key, this._options);

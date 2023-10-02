@@ -3,7 +3,6 @@ import {
   ModuleWithProviders,
   PLATFORM_ID,
   InjectionToken,
-  Injector,
   EnvironmentProviders,
   makeEnvironmentProviders
 } from '@angular/core';
@@ -11,9 +10,7 @@ import { NGXS_PLUGINS, withNgxsPlugin } from '@ngxs/store';
 import {
   NgxsStoragePluginOptions,
   STORAGE_ENGINE,
-  ɵNGXS_STORAGE_PLUGIN_OPTIONS,
-  ɵcreateFinalStoragePluginOptions,
-  ɵFINAL_NGXS_STORAGE_PLUGIN_OPTIONS
+  ɵNGXS_STORAGE_PLUGIN_OPTIONS
 } from '@ngxs/storage-plugin/internals';
 
 import { NgxsStoragePlugin } from './storage.plugin';
@@ -51,11 +48,6 @@ export class NgxsStoragePluginModule {
           provide: STORAGE_ENGINE,
           useFactory: engineFactory,
           deps: [ɵNGXS_STORAGE_PLUGIN_OPTIONS, PLATFORM_ID]
-        },
-        {
-          provide: ɵFINAL_NGXS_STORAGE_PLUGIN_OPTIONS,
-          useFactory: ɵcreateFinalStoragePluginOptions,
-          deps: [Injector, ɵNGXS_STORAGE_PLUGIN_OPTIONS]
         }
       ]
     };
@@ -80,11 +72,6 @@ export function withNgxsStoragePlugin(
       provide: STORAGE_ENGINE,
       useFactory: engineFactory,
       deps: [ɵNGXS_STORAGE_PLUGIN_OPTIONS, PLATFORM_ID]
-    },
-    {
-      provide: ɵFINAL_NGXS_STORAGE_PLUGIN_OPTIONS,
-      useFactory: ɵcreateFinalStoragePluginOptions,
-      deps: [Injector, ɵNGXS_STORAGE_PLUGIN_OPTIONS]
     }
   ]);
 }
