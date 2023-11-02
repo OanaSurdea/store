@@ -30,8 +30,8 @@ export interface AnimalsStateModel {
   defaults: {
     zebras: [],
     pandas: [],
-    monkeys: [],
-  },
+    monkeys: []
+  }
 })
 @Injectable()
 export class AnimalsState {}

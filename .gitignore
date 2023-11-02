@@ -67,3 +67,5 @@ yarn-error.log
 package-lock.json
 dist-integration-server/
 .cache
+migrations.json
+.nx/cache

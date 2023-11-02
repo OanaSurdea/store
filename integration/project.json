@@ -1,7 +1,6 @@
 {
   "name": "integration",
   "$schema": "../node_modules/nx/schemas/project-schema.json",
-  "root": "integration/",
   "sourceRoot": "integration",
   "projectType": "application",
   "prefix": "app",
@@ -100,7 +99,7 @@
       "dependsOn": ["^build"]
     },
     "test": {
-      "executor": "@nrwl/jest:jest",
+      "executor": "@nx/jest:jest",
       "options": {
         "jestConfig": "integration/jest.config.js",
         "passWithNoTests": true

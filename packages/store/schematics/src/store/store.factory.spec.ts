@@ -16,7 +16,7 @@ describe('NGXS Store', () => {
     const options: StoreSchema = {
       ...defaultOptions
     };
-    const tree: UnitTestTree = await runner.runSchematicAsync('store', options).toPromise();
+    const tree: UnitTestTree = await runner.runSchematic('store', options);
     const files: string[] = tree.files;
     expect(files).toEqual([
       '/todos/todos.actions.ts',
@@ -29,7 +29,7 @@ describe('NGXS Store', () => {
       ...defaultOptions,
       flat: true
     };
-    const tree: UnitTestTree = await runner.runSchematicAsync('store', options).toPromise();
+    const tree: UnitTestTree = await runner.runSchematic('store', options);
     const files: string[] = tree.files;
     expect(files).toEqual(['/todos.actions.ts', '/todos.state.spec.ts', '/todos.state.ts']);
   });
@@ -39,7 +39,7 @@ describe('NGXS Store', () => {
       ...defaultOptions,
       spec: false
     };
-    const tree: UnitTestTree = await runner.runSchematicAsync('store', options).toPromise();
+    const tree: UnitTestTree = await runner.runSchematic('store', options);
     const files: string[] = tree.files;
     expect(files).toEqual(['/todos/todos.actions.ts', '/todos/todos.state.ts']);
   });
@@ -49,7 +49,7 @@ describe('NGXS Store', () => {
       ...defaultOptions,
       spec: true
     };
-    const tree: UnitTestTree = await runner.runSchematicAsync('store', options).toPromise();
+    const tree: UnitTestTree = await runner.runSchematic('store', options);
     const files: string[] = tree.files;
     expect(files).toEqual([
       '/todos/todos.actions.ts',

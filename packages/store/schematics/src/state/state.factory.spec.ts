@@ -16,7 +16,7 @@ describe('Generate ngxs state', () => {
     const options: StateSchema = {
       ...defaultOptions
     };
-    const tree: UnitTestTree = await runner.runSchematicAsync('state', options).toPromise();
+    const tree: UnitTestTree = await runner.runSchematic('state', options);
     const files: string[] = tree.files;
     expect(files).toEqual(['/todos/todos.state.spec.ts', '/todos/todos.state.ts']);
   });
@@ -26,7 +26,7 @@ describe('Generate ngxs state', () => {
       ...defaultOptions,
       flat: true
     };
-    const tree: UnitTestTree = await runner.runSchematicAsync('state', options).toPromise();
+    const tree: UnitTestTree = await runner.runSchematic('state', options);
     const files: string[] = tree.files;
     expect(files).toEqual(['/todos.state.spec.ts', '/todos.state.ts']);
   });
@@ -36,7 +36,7 @@ describe('Generate ngxs state', () => {
       ...defaultOptions,
       spec: true
     };
-    const tree: UnitTestTree = await runner.runSchematicAsync('state', options).toPromise();
+    const tree: UnitTestTree = await runner.runSchematic('state', options);
     const files: string[] = tree.files;
     expect(files).toEqual(['/todos/todos.state.spec.ts', '/todos/todos.state.ts']);
   });
@@ -46,7 +46,7 @@ describe('Generate ngxs state', () => {
       ...defaultOptions,
       spec: false
     };
-    const tree: UnitTestTree = await runner.runSchematicAsync('state', options).toPromise();
+    const tree: UnitTestTree = await runner.runSchematic('state', options);
     const files: string[] = tree.files;
     expect(files).toEqual(['/todos/todos.state.ts']);
   });

@@ -13,9 +13,7 @@ describe('Generate ngxs starter kit', () => {
       spec: true,
       path: './src'
     };
-    const tree: UnitTestTree = await runner
-      .runSchematicAsync('starter-kit', options)
-      .toPromise();
+    const tree: UnitTestTree = await runner.runSchematic('starter-kit', options);
     const files: string[] = tree.files;
     expect(files).toEqual([
       '/src/store/store.config.ts',
@@ -38,9 +36,7 @@ describe('Generate ngxs starter kit', () => {
       spec: false,
       path: './src'
     };
-    const tree: UnitTestTree = await runner
-      .runSchematicAsync('starter-kit', options)
-      .toPromise();
+    const tree: UnitTestTree = await runner.runSchematic('starter-kit', options);
     const files: string[] = tree.files;
     expect(files).toEqual([
       '/src/store/store.config.ts',
